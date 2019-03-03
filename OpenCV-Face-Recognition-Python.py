@@ -1,3 +1,4 @@
+from gtts import gTTS
 
 # coding: utf-8
 import cv2
@@ -7,7 +8,7 @@ import os
 import numpy as np
 from PIL import Image
 
-subjects = ["Unidentified", "Jake Rodal", "Kevin Melloy", "Kaan Katircioglu", "Harun Feraidon"]
+subjects = ["Unidentified", "Kevin Melloy", "Kevin Melloy", "Kevin Melloy", "Kevin Melloy"]
 
 
 def detect_faces(img):
@@ -102,7 +103,7 @@ def prepare_training_data(data_folder_path):
 # faces, labels = prepare_training_data("training-data")
 # print("Data prepared")
 #
-# # print total faces and labels
+# #print total faces and labels
 # print("Total faces: ", len(faces))
 # print("Total labels: ", len(labels))
 #
@@ -147,7 +148,7 @@ def predict(test_img):
         # draw name of predicted person
         draw_text(img, label_text, rect[0], rect[1]-5)
 
-    return img
+    return img, subjects[label]
 
 # Now that we have the prediction function well defined, next step is to actually call this function on our test images and display those test images to see if our face recognizer correctly recognized them. So let's do it. This is what we have been waiting for.
 
@@ -176,18 +177,40 @@ if vc.isOpened():  # try to get the first frame
 else:
     rval = False
 
+name = ""
+last_seen = "dummy"
+identified = []
 while rval:
     img = Image.fromarray(frame, 'RGB')
     img.save('tmp.png')
     try:
-        predicted_img = predict(cv2.imread("tmp.png"))
+        predicted_img, name = predict(cv2.imread("tmp.png"))
+        if name != last_seen:
+            last_seen = name
+            identified = []
+            identified.append(name)
+            if name != "Unidentified":
+                tts = gTTS(text=f"Welcome home, {name}", lang='en')
+            else:
+                tts = gTTS(text=f"Unidentified", lang='en')
+            tts.save("pcvoice.mp3")
+            # to start the file from python
+            os.system("start pcvoice.mp3")
+
         cv2.imshow("preview", predicted_img)
+
+
     except TypeError:
         cv2.imshow("preview", frame)
     rval, frame = vc.read()
     key = cv2.waitKey(20)
     if key == 27:  # exit on ESC
         break
+    elif key == 13:
+        tts = gTTS(text=f"Welcome home, {name}", lang='en')
+        tts.save("pcvoice.mp3")
+        # to start the file from python
+        os.system("start pcvoice.mp3")
 
 cv2.destroyWindow("preview")
 vc.release()

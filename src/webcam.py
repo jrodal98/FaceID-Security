@@ -16,16 +16,15 @@ else:
 
 i = 1
 while rval and i < 551:
-    if (i > 20):
+    if (i > 50):
         img = Image.fromarray(frame, 'RGB')
-        img.save(f'training-data/s1/{i-20}.png')
+        img.save(f'training-data/s1/{i-50}.png')
     cv2.imshow("preview", frame)
     rval, frame = vc.read()
     key = cv2.waitKey(20)
     if key == 27:  # exit on ESC
         break
     i += 1
-    print(i)
 
 cv2.destroyWindow("preview")
 vc.release()
